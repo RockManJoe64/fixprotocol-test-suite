@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:util="http://www.springframework.org/schema/util"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-4.0.xsd">
+    <bean id="sessionSettings" class="quickfix.SessionSettings">
+        <constructor-arg value="${qfj.configuration}"/>
+    </bean>
+    <bean id="messageStoreFactory" class="quickfix.FileStoreFactory">
+        <constructor-arg ref="sessionSettings"/>
+    </bean>
+    <bean id="messageFactory" class="quickfix.DefaultMessageFactory">
+    </bean>
+    <bean id="application" class="org.fixprotocol.test.QFJApplication">
+        <property name="sessionSettings" ref="sessionSettings"/>
+        <property name="messageStoreFactory" ref="messageStoreFactory"/>
+        <property name="logFactory">
+            <bean class="quickfix.FileLogFactory">
+                <constructor-arg ref="sessionSettings"/>
+            </bean>
+        </property>
+        <property name="messageFactory" ref="messageFactory"/>
+        <property name="acceptor">
+            <bean class="quickfix.SocketAcceptor">
+                <constructor-arg ref="application"/>
+                <constructor-arg ref="messageStoreFactory"/>
+                <constructor-arg ref="sessionSettings"/>
+                <constructor-arg ref="messageFactory"/>
+            </bean>
+        </property>
+    </bean>
+    <bean class="org.fixprotocol.test.GenericScriptEngineJRE">
+        <constructor-arg value="${script.language}"/>
+    </bean>
+</beans>
