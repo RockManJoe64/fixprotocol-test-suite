@@ -29,6 +29,9 @@
             </bean>
         </property>
     </bean>
+    <bean id="prototypeTable" class="org.fixprotocol.test.PrototypeTable">
+        <constructor-arg value="${prototype.file}"/>
+    </bean>
     <bean class="org.fixprotocol.test.GenericScriptEngineJRE">
         <constructor-arg value="${script.language}"/>
     </bean>

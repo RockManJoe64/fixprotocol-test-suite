@@ -9,11 +9,12 @@ import quickfix.FieldNotFound;
 import quickfix.IncorrectDataFormat;
 import quickfix.IncorrectTagValue;
 import quickfix.Message;
+import quickfix.MessageCracker;
 import quickfix.RejectLogon;
 import quickfix.SessionID;
 import quickfix.UnsupportedMessageType;
 
-public class AbstractApplication implements ApplicationExtended {
+public class AbstractApplication extends MessageCracker implements ApplicationExtended {
 
 	static final Logger log = LoggerFactory.getLogger(AbstractApplication.class);
 
