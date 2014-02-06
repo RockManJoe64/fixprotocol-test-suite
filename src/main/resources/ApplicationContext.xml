@@ -11,7 +11,7 @@
     </bean>
     <bean id="messageFactory" class="quickfix.DefaultMessageFactory">
     </bean>
-    <bean id="application" class="org.fixprotocol.test.QFJApplication">
+    <bean id="application" class="org.fixprotocol.test.script.FIXConnection">
         <property name="sessionSettings" ref="sessionSettings"/>
         <property name="messageStoreFactory" ref="messageStoreFactory"/>
         <property name="logFactory">
@@ -32,7 +32,7 @@
     <bean id="prototypeTable" class="org.fixprotocol.test.PrototypeTable">
         <constructor-arg value="${prototype.file}"/>
     </bean>
-    <bean class="org.fixprotocol.test.GenericScriptEngineJRE">
+    <bean class="org.fixprotocol.test.script.GenericScriptEngineJRE">
         <constructor-arg value="${script.language}"/>
     </bean>
 </beans>

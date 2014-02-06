@@ -50,7 +50,6 @@ public class FIXMessageAnalyzePanel extends JPanel implements WindowListener {
                 pnlFixMsgTable.setData(fixFields);
 
                 FIXMessage message = new FIXMessage(fixFields);
-                message.setMessageString(messageString);
                 fixMsgListPanel.addElement(new FIXMessageListItem(message));
             } catch (ConfigError | IOException ex) {
                 ex.printStackTrace();
@@ -112,8 +111,8 @@ public class FIXMessageAnalyzePanel extends JPanel implements WindowListener {
                     .getSource();
             FIXMessageListItem listItem = list.getSelectedValue();
             FIXMessage message = listItem.getMessage();
-            pnlFixMsgTable.setData(message.getFields());
-            txtInputArea.setText(message.getMessageString());
+            pnlFixMsgTable.setData(message.getAll());
+            txtInputArea.setText(message.toString());
         }
     }
 

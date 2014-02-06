@@ -1,4 +1,4 @@
-package org.fixprotocol.test.js;
+package org.fixprotocol.test.script;
 
 import java.io.FileReader;
 import java.util.Date;

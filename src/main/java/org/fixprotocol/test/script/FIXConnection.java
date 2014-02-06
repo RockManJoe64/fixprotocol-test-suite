@@ -1,4 +1,4 @@
-package org.fixprotocol.test;
+package org.fixprotocol.test.script;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
@@ -6,6 +6,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.fixprotocol.test.fix.FIXMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -35,10 +36,10 @@ import quickfix.SessionSettings;
 import quickfix.UnsupportedMessageType;
 import quickfix.field.MsgType;
 
-public class QFJApplication implements ApplicationExtended, SmartLifecycle,
+public class FIXConnection implements ApplicationExtended, SmartLifecycle,
 		ApplicationContextAware {
 
-	static final Logger log = LoggerFactory.getLogger(QFJApplication.class);
+	static final Logger log = LoggerFactory.getLogger(FIXConnection.class);
 
 	private SessionSettings sessionSettings;
 	private MessageStoreFactory messageStoreFactory;
@@ -62,7 +63,7 @@ public class QFJApplication implements ApplicationExtended, SmartLifecycle,
 	 */
 
 	public boolean send(FIXMessage fixmsg) {
-		return session.send(new FIXMessageAdapter(fixmsg).convert());
+		return session.send(FIXMessage.convert(fixmsg));
 	}
 
 	public FIXMessage receive() {
@@ -89,14 +90,17 @@ public class QFJApplication implements ApplicationExtended, SmartLifecycle,
 	 * QuickFIXJ Callback methods
 	 */
 
+	@Override
 	public void onCreate(SessionID sessionID) {
 		log.debug(String.format("onCreate: %s", sessionID));
 	}
 
+	@Override
 	public boolean canLogon(SessionID sessionID) {
 		return true;
 	}
 
+	@Override
 	public void onLogon(SessionID sessionID) {
 		log.debug(String.format("onLogon: %s", sessionID));
 		loggedOn.set(true);
@@ -110,14 +114,17 @@ public class QFJApplication implements ApplicationExtended, SmartLifecycle,
 		dataDictionary = session.getDataDictionary();
 	}
 
+	@Override
 	public void onLogout(SessionID sessionID) {
 		log.debug(String.format("onLogout: %s", sessionID));
 	}
 
+	@Override
 	public void onBeforeSessionReset(SessionID sessionID) {
 		log.debug(String.format("onBeforeSessionReset: %s", sessionID));
 	}
 
+	@Override
 	public void fromAdmin(Message message, SessionID sessionID)
 			throws FieldNotFound, IncorrectDataFormat, IncorrectTagValue,
 			RejectLogon {
@@ -127,8 +134,8 @@ public class QFJApplication implements ApplicationExtended, SmartLifecycle,
 					.getMessageType(message.toString());
 			if (MsgType.REJECT.equals(messageType)
 					|| MsgType.BUSINESS_MESSAGE_REJECT.equals(messageType)) {
-				queue.put(new QFJMessageAdapter(message, dataDictionary)
-						.convert());
+				queue.put(FIXMessage
+						.convert(message));
 			}
 		} catch (InvalidMessage e) {
 			log.error("Could not process reject message", e);
@@ -137,21 +144,24 @@ public class QFJApplication implements ApplicationExtended, SmartLifecycle,
 		}
 	}
 
+	@Override
 	public void toAdmin(Message message, SessionID sessionID) {
 		log.info(String.format("toAdmin: %s - %s", sessionID, message));
 	}
 
+	@Override
 	public void fromApp(Message message, SessionID sessionID)
 			throws FieldNotFound, IncorrectDataFormat, IncorrectTagValue,
 			UnsupportedMessageType {
 		log.info(String.format("fromApp: %s - %s", sessionID, message));
 		try {
-			queue.put(new QFJMessageAdapter(message, dataDictionary).convert());
+			queue.put(FIXMessage.convert(message));
 		} catch (InterruptedException e) {
 			log.error("Interrupted while placing message on queue", e);
 		}
 	}
 
+	@Override
 	public void toApp(Message message, SessionID sessionID) throws DoNotSend {
 		log.info(String.format("toApp: %s - %s", sessionID, message));
 	}
@@ -162,10 +172,12 @@ public class QFJApplication implements ApplicationExtended, SmartLifecycle,
 
 	private boolean running = false;
 
+	@Override
 	public boolean isRunning() {
 		return running;
 	}
 
+	@Override
 	public void start() {
 		try {
 			acceptor.start();
@@ -179,19 +191,23 @@ public class QFJApplication implements ApplicationExtended, SmartLifecycle,
 		}
 	}
 
+	@Override
 	public void stop() {
 		acceptor.stop();
 		running = false;
 	}
 
+	@Override
 	public int getPhase() {
 		return 0;
 	}
 
+	@Override
 	public boolean isAutoStartup() {
 		return true;
 	}
 
+	@Override
 	public void stop(Runnable runnable) {
 		runnable.run();
 		stop();
@@ -241,6 +257,7 @@ public class QFJApplication implements ApplicationExtended, SmartLifecycle,
 		this.acceptor = acceptor;
 	}
 
+	@Override
 	public void setApplicationContext(ApplicationContext applicationContext)
 			throws BeansException {
 		this.applicationContext = applicationContext;

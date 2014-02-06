@@ -31,7 +31,7 @@ public class FIXMessageListItem {
     private void parse() {
         FIXProtocol fixProtocol = FIXProtocol.getInstance();
 
-        String msgStr = message.getMessageString();
+        String msgStr = message.toString();
         Field<Object> field = fixProtocol.getField(msgStr, MsgType.FIELD);
         msgType = (String) field.getObject();
         try {

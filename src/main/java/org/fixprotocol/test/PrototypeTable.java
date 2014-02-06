@@ -5,6 +5,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.List;
 
+import org.fixprotocol.test.fix.FIXMessage;
+
 public class PrototypeTable {
 
 	public PrototypeTable(String prototypeFile) throws IOException {

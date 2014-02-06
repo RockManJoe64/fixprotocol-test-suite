@@ -2,6 +2,7 @@ package org.fixprotocol.test;
 
 import java.text.DecimalFormat;
 
+import org.fixprotocol.test.session.AbstractApplication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.Lifecycle;

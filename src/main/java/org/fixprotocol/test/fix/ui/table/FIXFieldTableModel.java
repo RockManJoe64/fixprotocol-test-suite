@@ -48,7 +48,7 @@ public class FIXFieldTableModel extends AbstractTableModel {
     public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
         if (columnIndex == COLUMN_INDEX_VALUE) {
             FIXField field = data.get(rowIndex);
-            field.setValue(aValue);
+            field.set(aValue);
             fireTableCellUpdated(rowIndex, columnIndex);
         }
     }
@@ -72,15 +72,18 @@ public class FIXFieldTableModel extends AbstractTableModel {
         }
     }
 
-    public int getRowCount() {
+    @Override
+	public int getRowCount() {
         return data.size();
     }
 
-    public int getColumnCount() {
+    @Override
+	public int getColumnCount() {
         return 3;
     }
 
-    public Object getValueAt(int rowIndex, int columnIndex) {
+    @Override
+	public Object getValueAt(int rowIndex, int columnIndex) {
         FIXField field = data.get(rowIndex);
         switch (columnIndex) {
         case COLUMN_INDEX_NAME:

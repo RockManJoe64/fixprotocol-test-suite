@@ -1,58 +1,92 @@
 package org.fixprotocol.test.fix;
 
-import quickfix.FieldType;
+public class FIXField implements Comparable<FIXField>, Cloneable {
 
-/**
- * Only the value field is mutable
- * 
- * @author V594520
- * 
- */
-public class FIXField {
+	public static final String UNDEFINED = "UNDEFINED";
+	public static final int TAG_ZERO = 0;
 
-    private String name;
-    private Integer tag;
-    private Object value;
-    private FieldType fieldType;
+	public static final FIXField NULL_FIELD = new FIXField();
 
-    public FIXField(String name, int tag, Object value) {
-        super();
-        this.name = name;
-        this.tag = tag;
-        this.value = value;
-    }
+	private String name;
+	private int tag;
+	private Object value;
 
-    @Override
-    public String toString() {
-        StringBuilder builder = new StringBuilder();
-        builder.append("FIXField [").append(tag).append("(").append(name)
-                .append(")=").append(value).append("(").append(fieldType)
-                .append(")]");
-        return builder.toString();
-    }
+	public FIXField() {
+		this(UNDEFINED, TAG_ZERO, UNDEFINED);
+	}
 
-    public String getName() {
-        return name;
-    }
+	public FIXField(String name, int tag, Object value) {
+		this.name = name;
+		this.tag = tag;
+		this.value = value;
+	}
 
-    public Integer getTag() {
-        return tag;
-    }
+	public FIXField(String name, Object value) {
+		this(name, TAG_ZERO, value);
+	}
 
-    public Object getValue() {
-        return value;
-    }
+	public FIXField(int tag, Object value) {
+		this(UNDEFINED, tag, value);
+	}
 
-    public void setValue(Object value) {
-        this.value = value;
-    }
+	@Override
+	public String toString() {
+		return name + "(" + tag + ")=" + value;
+	}
 
-    public FieldType getFieldType() {
-        return fieldType;
-    }
+	public String fix() {
+		return tag + "=" + value;
+	}
 
-    public void setFieldType(FieldType fieldType) {
-        this.fieldType = fieldType;
-    }
+	public String readable() {
+		return name + "=" + value;
+	}
+
+	public boolean is(String value) {
+		return this.value.equals(value);
+	}
+
+	public void set(String value) {
+		this.value = value;
+	}
+
+	public void set(Object value) {
+		this.value = value;
+	}
+
+	@Override
+	public int hashCode() {
+		return (tag + value.toString()).hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		return this.hashCode() == obj.hashCode();
+	}
+
+	@Override
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public int compareTo(FIXField o) {
+		if (this.tag != o.tag) { return this.tag - o.tag; }
+
+		return ((Comparable)this.value).compareTo(o.value);
+	}
+
+	@Override
+	public Object clone() {
+		return new FIXField(this.name, this.tag, this.value);
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public int getTag() {
+		return tag;
+	}
+
+	public Object getValue() {
+		return value;
+	}
 
 }

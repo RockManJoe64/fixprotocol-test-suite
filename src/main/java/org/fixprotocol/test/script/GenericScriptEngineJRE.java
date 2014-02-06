@@ -1,4 +1,4 @@
-package org.fixprotocol.test;
+package org.fixprotocol.test.script;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -13,6 +13,7 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
+import org.fixprotocol.test.fix.FIXMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

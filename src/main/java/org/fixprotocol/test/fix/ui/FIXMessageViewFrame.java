@@ -36,12 +36,12 @@ public class FIXMessageViewFrame extends JFrame {
         txtInputArea.setLineWrap(true);
         txtInputArea.setWrapStyleWord(false);
         txtInputArea.setEditable(false);
-        txtInputArea.setText(fixMessage.getMessageString());
+        txtInputArea.setText(fixMessage.toString());
 
         JScrollPane inputScrollPane = new JScrollPane(txtInputArea);
 
         FIXFieldTablePanel pnlFixMsgTable = new FIXFieldTablePanel();
-        pnlFixMsgTable.setData(fixMessage.getFields());
+        pnlFixMsgTable.setData(fixMessage.getAll());
 
         final JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
                 true, inputScrollPane, pnlFixMsgTable);

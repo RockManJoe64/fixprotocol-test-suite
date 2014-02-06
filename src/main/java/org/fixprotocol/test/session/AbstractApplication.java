@@ -1,4 +1,4 @@
-package org.fixprotocol.test;
+package org.fixprotocol.test.session;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

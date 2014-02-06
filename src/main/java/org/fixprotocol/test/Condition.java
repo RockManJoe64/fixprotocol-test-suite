@@ -2,6 +2,9 @@ package org.fixprotocol.test;
 
 import java.util.ArrayList;
 
+import org.fixprotocol.test.fix.FIXField;
+import org.fixprotocol.test.fix.FIXMessage;
+
 public class Condition {
 
 	private FIXMessage expected = new FIXMessage();

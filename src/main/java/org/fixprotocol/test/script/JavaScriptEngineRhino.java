@@ -1,4 +1,4 @@
-package org.fixprotocol.test;
+package org.fixprotocol.test.script;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import org.fixprotocol.test.fix.FIXMessage;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.ImporterTopLevel;
 import org.mozilla.javascript.Scriptable;

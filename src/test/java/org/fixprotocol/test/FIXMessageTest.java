@@ -3,8 +3,8 @@ package org.fixprotocol.test;
 import java.util.Arrays;
 import java.util.Collections;
 
-import org.fixprotocol.test.FIXField;
-import org.fixprotocol.test.FIXMessage;
+import org.fixprotocol.test.fix.FIXField;
+import org.fixprotocol.test.fix.FIXMessage;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

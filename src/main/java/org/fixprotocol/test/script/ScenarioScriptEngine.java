@@ -1,8 +1,10 @@
-package org.fixprotocol.test;
+package org.fixprotocol.test.script;
 
 import java.io.File;
 import java.util.List;
 import java.util.Map;
+
+import org.fixprotocol.test.fix.FIXMessage;
 
 public interface ScenarioScriptEngine {
 
