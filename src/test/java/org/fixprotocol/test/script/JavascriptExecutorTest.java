@@ -3,8 +3,10 @@ package org.fixprotocol.test.script;
 import java.io.File;
 import java.util.Arrays;
 
-import org.fixprotocol.test.fix.FIXField;
-import org.fixprotocol.test.fix.FIXMessage;
+import org.fixprotocol.fix.FIXField;
+import org.fixprotocol.fix.FIXMessage;
+import org.fixprotocol.script.JavaScriptEngineRhino;
+import org.fixprotocol.script.ScenarioScriptEngine;
 import org.junit.Test;
 
 
