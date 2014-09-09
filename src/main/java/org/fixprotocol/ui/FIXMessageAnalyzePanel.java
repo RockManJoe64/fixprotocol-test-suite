@@ -11,6 +11,8 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.fixprotocol.fix.FIXMessage;
+import org.fixprotocol.ui.event.DataDictionaryEvent;
+import org.fixprotocol.ui.event.DataDictionaryListener;
 import org.fixprotocol.ui.list.FIXMessageListItem;
 import org.fixprotocol.ui.list.FIXMessageListPanel;
 import org.fixprotocol.ui.table.FIXFieldTablePanel;
@@ -19,7 +21,8 @@ import org.fixprotocol.ui.text.FIXMessageTextAreaPanel;
 import quickfix.DataDictionary;
 
 
-public class FIXMessageAnalyzePanel extends JPanel implements WindowListener, DataDictionaryAware {
+public class FIXMessageAnalyzePanel extends JPanel implements WindowListener,
+		DataDictionaryListener {
 
     private static final long serialVersionUID = 1L;
     
@@ -107,16 +110,27 @@ public class FIXMessageAnalyzePanel extends JPanel implements WindowListener, Da
 
     }
 
-	@Override
 	public DataDictionary getDataDictionary() {
 		return this.dataDictionary;
 	}
 
-	@Override
 	public void setDataDictionary(DataDictionary dd) {
 		this.dataDictionary = dd;
 		pnlFixMessageTextArea.setDataDictionary(dd);
 		fixMsgListPanel.setDataDictionary(dd);
+	}
+
+	@Override
+	public void dataDictionaryAdded(DataDictionaryEvent e) {
+	}
+
+	@Override
+	public void dataDictionaryRemoved(DataDictionaryEvent e) {
+	}
+
+	@Override
+	public void dataDictionarySelected(DataDictionaryEvent e) {
+		setDataDictionary(e.getDataDictionary());
 	}
 
 }

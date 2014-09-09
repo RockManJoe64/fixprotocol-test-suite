@@ -6,5 +6,7 @@ public final class ASCII {
 	public static final char ETX = '\003';
 	public static final char EOT = '\004';
     public static final char EOL = '\n';
+    
+    public static final char PIPE = '|';
 	
 }

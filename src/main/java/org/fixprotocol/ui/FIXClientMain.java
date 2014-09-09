@@ -5,12 +5,12 @@ import java.awt.Color;
 import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Desktop;
+import java.awt.Dialog.ModalityType;
 import java.awt.FlowLayout;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -19,7 +19,6 @@ import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
-import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -33,14 +32,11 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import javax.swing.filechooser.FileFilter;
-
 import org.fixprotocol.fix.DataDictionaries;
 import org.fixprotocol.ui.icon.IconCache;
+import org.fixprotocol.ui.list.DataDictionaryFileDialog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import quickfix.ConfigError;
 
 public class FIXClientMain {
 
@@ -51,6 +47,8 @@ public class FIXClientMain {
 	private DataDictionaries dictionaries = new DataDictionaries();
 
 	private FIXMessageAnalyzePanel fixMsgAnalyzePnl;
+
+	private DataDictionaryFileDialog dictionariesDialog;
 
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(new Runnable() {
@@ -103,35 +101,8 @@ public class FIXClientMain {
 
 		@Override
 		public void actionPerformed(ActionEvent ev) {
-			JFileChooser chooser = new JFileChooser();
-			chooser.setDialogTitle("Choose a DataDictionary file");
-			chooser.setMultiSelectionEnabled(false);
-			chooser.setFileFilter(new FileFilter() {
-				@Override
-				public String getDescription() {
-					return "QuickFIX DataDictionary (*.xml)";
-				}
-				
-				@Override
-				public boolean accept(File f) {
-					return f.isDirectory() || f.getName().toLowerCase().endsWith(".xml");
-				}
-			});
-			int selected = chooser.showOpenDialog(jframe);
-			if (selected == JFileChooser.APPROVE_OPTION) {
-				String name = JOptionPane.showInputDialog(jframe, "What is the name for this data dictionary?");
-				String absolutePath = chooser.getSelectedFile().getAbsolutePath();
-				try {
-					dictionaries.loadDictionary(name, new File(absolutePath));
-					fixMsgAnalyzePnl.setDataDictionary(dictionaries.getDataDictionary(name));
-				} catch (ConfigError | IOException e) {
-					JOptionPane.showMessageDialog(jframe,
-							"An error occurred while attempting to load the data dictionary: "
-									+ e.getMessage(),
-							"Unable To Load DataDictionary",
-							JOptionPane.ERROR_MESSAGE);
-				}
-			}
+			dictionariesDialog.setLocationByPlatform(true);
+			dictionariesDialog.setVisible(true);
 		}
 	}
 
@@ -179,16 +150,16 @@ public class FIXClientMain {
 		JTabbedPane tabbedPane = new JTabbedPane();
 		tabbedPane.addTab("Analyze", iconBullet, fixMsgAnalyzePnl);
 		
+		ImageIcon iconFrame = IconCache.getInstance().getIcon("fixprotocol", 16);
+		List<Image> frameIcons = IconCache.getInstance().getIconImageList(
+				"fixprotocol", 16, 24, 32, 48);
+		
 		/*
 		 * JFRAME
 		 */
-		ImageIcon iconFrame = IconCache.getInstance().getIcon("fixprotocol", 16);
-		List<Image> iconList = IconCache.getInstance().getIconImageList(
-				"fixprotocol", 16, 24, 32, 48);
-
 		jframe = new JFrame("FIX Protocol Client");
 		jframe.setIconImage(iconFrame.getImage());
-		jframe.setIconImages(iconList);
+		jframe.setIconImages(frameIcons);
 		jframe.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		jframe.addWindowListener(fixMsgAnalyzePnl);
 
@@ -208,6 +179,13 @@ public class FIXClientMain {
 		JPanel tabPanel = new JPanel(new BorderLayout());
 		tabPanel.add(tabbedPane);
 		tabPanel.add(toolBar, BorderLayout.NORTH);
+		
+		// DIALOGS
+		dictionariesDialog = new DataDictionaryFileDialog(jframe,
+				"Data Dictionaries", ModalityType.APPLICATION_MODAL);
+		dictionariesDialog.addDataDictionaryListener(fixMsgAnalyzePnl);
+		dictionariesDialog.setIconImages(frameIcons);
+		dictionariesDialog.setSize(640, 320);
 
 		// MAIN CONTAINER
 		Container cp = jframe.getContentPane();
@@ -217,7 +195,7 @@ public class FIXClientMain {
 		cp.add(statusPanel, BorderLayout.SOUTH);
 
 		// frame.pack();
-		jframe.setSize(640, 480);
+		jframe.setSize(1000, 600);
 		jframe.setLocationByPlatform(true);
 		jframe.setVisible(true);
 	}
