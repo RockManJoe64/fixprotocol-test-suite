@@ -7,11 +7,13 @@ import java.util.List;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.SortOrder;
 import javax.swing.table.TableModel;
 
 import org.fixprotocol.fix.FIXField;
 import org.fixprotocol.ui.event.FIXMessageEvent;
 import org.fixprotocol.ui.event.FIXMessageListener;
+import org.jdesktop.swingx.decorator.HighlighterFactory;
 
 
 public class FIXFieldTablePanel extends JPanel implements FIXMessageListener {
@@ -32,8 +34,13 @@ public class FIXFieldTablePanel extends JPanel implements FIXMessageListener {
 
         jTable = new FIXFieldTable(model, tagEditorModel);
         jTable.setAutoscrolls(false);
-        jTable.setAutoResizeMode(JTable.AUTO_RESIZE_NEXT_COLUMN);
+        jTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
         jTable.setFont(new Font("Consolas", Font.PLAIN, 12));
+        jTable.addHighlighter(HighlighterFactory.createSimpleStriping());
+		jTable.setSortOrderCycle(new SortOrder[] { 
+				SortOrder.ASCENDING,
+				SortOrder.DESCENDING, 
+				SortOrder.UNSORTED });
 
         JScrollPane scrollPane = new JScrollPane(jTable);
         this.setLayout(new BorderLayout());

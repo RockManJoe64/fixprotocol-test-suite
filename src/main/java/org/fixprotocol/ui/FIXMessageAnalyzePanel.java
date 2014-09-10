@@ -72,7 +72,7 @@ public class FIXMessageAnalyzePanel extends JPanel implements WindowListener,
 
     public void doPostVisibleAction() {
         splitPaneListTbl.setDividerLocation(0.5);
-        splitPaneMain.setDividerLocation(0.75);
+        splitPaneMain.setDividerLocation(0.25);
     }
 
     @Override

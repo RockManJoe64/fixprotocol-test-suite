@@ -9,6 +9,8 @@ import java.util.Set;
 
 import org.fixprotocol.ASCII;
 
+import quickfix.DataDictionary;
+
 /**
  * Immutable class representing a FIX message.
  *
@@ -91,6 +93,22 @@ public class FIXMessage implements Comparable<FIXMessage>, Cloneable {
 		}
 		return msg;
 	}
+	
+	public void applyDataDictionary(DataDictionary dataDictionary) {
+		ArrayList<FIXField> list = new ArrayList<FIXField>();
+		for (int index = 0; index < this.fields.size(); index++) {
+			FIXField f = this.fields.get(index);
+			String name = dataDictionary.getFieldName(f.getTag());
+            if (name == null || "".equals(name)) {
+                name = "CustomTag";
+            }
+			list.add(new FIXField(name, f.getTag(), f.getValue()));
+		}
+		fields.clear();
+		fieldSet.clear();
+		tagSet.clear();
+		initByList(list);
+	}
 
 	/*
 	 * Addition/removal methods
@@ -142,7 +160,7 @@ public class FIXMessage implements Comparable<FIXMessage>, Cloneable {
 	protected FIXMessage clone() throws CloneNotSupportedException {
 		ArrayList<FIXField> fields = new ArrayList<FIXField>();
 		for (FIXField field : this.fields) {
-			fields.add((FIXField) field.clone());
+			fields.add(field.clone());
 		}
 		return new FIXMessage(fields);
 	}

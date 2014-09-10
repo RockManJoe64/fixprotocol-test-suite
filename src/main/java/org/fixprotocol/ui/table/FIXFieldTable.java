@@ -2,13 +2,14 @@ package org.fixprotocol.ui.table;
 
 import java.util.Vector;
 
-import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 
-public class FIXFieldTable extends JTable {
+import org.jdesktop.swingx.JXTable;
+
+public class FIXFieldTable extends JXTable {
 
     private static final long serialVersionUID = 1L;
 
@@ -38,7 +39,8 @@ public class FIXFieldTable extends JTable {
         super(dm);
     }
 
-    public FIXFieldTable(Vector rowData, Vector columnNames) {
+    @SuppressWarnings("rawtypes")
+	public FIXFieldTable(Vector rowData, Vector columnNames) {
         super(rowData, columnNames);
     }
 
