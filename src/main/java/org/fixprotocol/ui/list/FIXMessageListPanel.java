@@ -1,6 +1,7 @@
 package org.fixprotocol.ui.list;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -12,24 +13,37 @@ import java.util.List;
 import java.util.prefs.Preferences;
 
 import javax.swing.AbstractAction;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
+import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.event.ListSelectionListener;
 
+import org.apache.commons.lang3.StringUtils;
 import org.fixprotocol.fix.FIXField;
 import org.fixprotocol.fix.FIXMessage;
 import org.fixprotocol.fix.FIXProtocol;
 import org.fixprotocol.ui.DataDictionaryAware;
 import org.fixprotocol.ui.event.FIXMessageEvent;
 import org.fixprotocol.ui.event.FIXMessageListener;
+import org.fixprotocol.ui.icon.IconCache;
 import org.jdesktop.swingx.JXList;
 
 import quickfix.ConfigError;
 import quickfix.DataDictionary;
+import quickfix.Field;
+import quickfix.field.BeginString;
+import quickfix.field.MsgSeqNum;
+import quickfix.field.MsgType;
+import quickfix.field.SenderCompID;
+import quickfix.field.SenderSubID;
+import quickfix.field.TargetCompID;
+import quickfix.field.TargetSubID;
 
 public class FIXMessageListPanel extends JPanel implements FIXMessageListener,
 		DataDictionaryAware {
@@ -112,6 +126,8 @@ public class FIXMessageListPanel extends JPanel implements FIXMessageListener,
 	}
 
 	private void initUI() {
+		final ImageIcon icon = IconCache.getInstance().getIcon("msg", 16);
+		
 		dataModel = new DefaultListModel<FIXMessageListItem>();
 		jList = new JXList(dataModel);
 		jList.addMouseListener(new MouseAdapter() {
@@ -119,6 +135,19 @@ public class FIXMessageListPanel extends JPanel implements FIXMessageListener,
 			public void mouseClicked(MouseEvent e) {
 				if (e.isPopupTrigger()) {
 				}
+			}
+		});
+		jList.setCellRenderer(new DefaultListCellRenderer() {
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			public Component getListCellRendererComponent(JList<?> list,
+					Object value, int index, boolean isSelected,
+					boolean cellHasFocus) {
+				super.getListCellRendererComponent(list, value, index, isSelected,
+						cellHasFocus);
+				setIcon(icon);
+				return this;
 			}
 		});
 
@@ -138,6 +167,11 @@ public class FIXMessageListPanel extends JPanel implements FIXMessageListener,
 
 	public void addElement(FIXMessageListItem element) {
 		dataModel.addElement(element);
+	}
+
+	public FIXMessage getSelectedValue() {
+		FIXMessageListItem item = (FIXMessageListItem) jList.getSelectedValue();
+		return item.getMessage();
 	}
 
 	public void addListSelectionListener(ListSelectionListener listener) {
@@ -165,6 +199,83 @@ public class FIXMessageListPanel extends JPanel implements FIXMessageListener,
 	@Override
 	public void setDataDictionary(DataDictionary dd) {
 		this.dataDictionary = dd;
+	}
+	
+	private class FIXMessageListItem {
+	    private FIXMessage message;
+
+	    private String beginString;
+	    private String senderCompId;
+	    private String senderSubId;
+	    private String targetCompId;
+	    private String targetSubId;
+	    private String msgType;
+	    private String msgTypeDesc;
+	    private Integer msgSeqNum;
+	    
+	    public FIXMessageListItem(FIXMessage message, DataDictionary dataDictionary) {
+	        this.message = message;
+	        parse(dataDictionary);
+	    }
+	    
+		public FIXMessage getMessage() {
+	        return message;
+	    }
+		
+		public void applyDataDictionary(DataDictionary dataDictionary) {
+			this.message.applyDataDictionary(dataDictionary);
+			parse(dataDictionary);
+		}
+
+	    private void parse(DataDictionary dataDictionary) {
+	        FIXProtocol fixProtocol = FIXProtocol.getInstance();
+
+	        String msgStr = message.toString();
+	        msgType = FIXProtocol.getMsgType(msgStr);
+	        Field<Object> field = fixProtocol.getField(msgStr, MsgType.FIELD, dataDictionary);
+	        msgTypeDesc = (String) field.getObject();
+	        try {
+	            msgTypeDesc = FIXProtocol.getMsgTypeDescription(msgStr);
+	        } catch (IllegalArgumentException | IllegalAccessException e) {
+	            e.printStackTrace();
+	        }
+
+	        field = fixProtocol.getField(msgStr, SenderCompID.FIELD, dataDictionary);
+	        senderCompId = (String) field.getObject();
+	        
+	        field = fixProtocol.getField(msgStr, SenderSubID.FIELD, dataDictionary);
+	        if (field != null)
+	        	senderSubId = (String) field.getObject();
+
+	        field = fixProtocol.getField(msgStr, TargetCompID.FIELD, dataDictionary);
+	        targetCompId = (String) field.getObject();
+	        
+	        field = fixProtocol.getField(msgStr, TargetSubID.FIELD, dataDictionary);
+	        if (field != null)
+	        	targetSubId = (String) field.getObject();
+
+	        field = fixProtocol.getField(msgStr, BeginString.FIELD, dataDictionary);
+	        beginString = (String) field.getObject();
+	        
+	        field = fixProtocol.getField(msgStr, MsgSeqNum.FIELD, dataDictionary);
+	        msgSeqNum = Integer.valueOf((String) field.getObject());
+	    }
+	    
+	    @Override
+	    public String toString() {
+	        StringBuilder builder = new StringBuilder();
+	        builder.append(beginString).append(":")
+	        		.append(senderCompId);
+	        if (StringUtils.isNotBlank(senderSubId))
+	        	builder.append("/").append(senderSubId);
+	        builder.append("->").append(targetCompId);
+	        if (StringUtils.isNotBlank(targetSubId))
+	        	builder.append("/").append(targetSubId);
+	        builder.append(":").append(msgSeqNum);
+			builder.append(":").append(msgType).append("/").append(msgTypeDesc);
+
+	        return builder.toString();
+	    }
 	}
 
 }

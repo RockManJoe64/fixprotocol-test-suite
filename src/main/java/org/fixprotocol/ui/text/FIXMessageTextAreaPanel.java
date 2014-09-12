@@ -36,6 +36,7 @@ public class FIXMessageTextAreaPanel extends JPanel implements DataDictionaryAwa
 	
 	private JTextArea fixMessageTextArea;
 	private DataDictionary dataDictionary;
+	private JComboBox<Delimiter> delimiterCBox;
 	
 	private enum Delimiter {
 		SOH(ASCII.SOH),
@@ -132,18 +133,18 @@ public class FIXMessageTextAreaPanel extends JPanel implements DataDictionaryAwa
 
         JScrollPane inputScrollPane = new JScrollPane(fixMessageTextArea);
         
-		final JComboBox<Delimiter> cbox = new JComboBox<Delimiter>(new Delimiter[] {
+		delimiterCBox = new JComboBox<Delimiter>(new Delimiter[] {
 				Delimiter.SOH, 
 				Delimiter.PIPE, 
 				Delimiter.NEWLINE 
 				});
-		cbox.addItemListener(new ItemListener() {
+		delimiterCBox.addItemListener(new ItemListener() {
 			@Override
 			public void itemStateChanged(ItemEvent e) {
 				if (e.getStateChange() == ItemEvent.DESELECTED) {
 					denormalize();
 				} else if (e.getStateChange() == ItemEvent.SELECTED) {
-					normalize((Delimiter) cbox.getSelectedItem());
+					normalize((Delimiter) delimiterCBox.getSelectedItem());
 				}
 			}
 		});
@@ -152,7 +153,7 @@ public class FIXMessageTextAreaPanel extends JPanel implements DataDictionaryAwa
         JButton aegisButton = new JButton(new ConvertToAegisAction());
         JButton addButton = new JButton(new UpdateAction());
         JPanel pnlButton = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        pnlButton.add(cbox);
+        pnlButton.add(delimiterCBox);
         pnlButton.add(excelButton);
         pnlButton.add(aegisButton);
         pnlButton.add(addButton);
@@ -198,13 +199,12 @@ public class FIXMessageTextAreaPanel extends JPanel implements DataDictionaryAwa
 		}
 	}
 	
-	/**
-	 * @return the fixMessageTextArea
-	 */
-	public JTextArea getFixMessageTextArea() {
-		return fixMessageTextArea;
+	public void updateFIXMessage(FIXMessage message) {
+		String text = message.toString();
+		this.fixMessageTextArea.setText(text);
+		normalize((Delimiter) delimiterCBox.getSelectedItem());
 	}
-
+	
 	@Override
 	public DataDictionary getDataDictionary() {
 		return this.dataDictionary;

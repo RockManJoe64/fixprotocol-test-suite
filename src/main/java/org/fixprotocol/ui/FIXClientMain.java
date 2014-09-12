@@ -19,6 +19,7 @@ import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -32,6 +33,7 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+
 import org.fixprotocol.fix.DataDictionaries;
 import org.fixprotocol.ui.icon.IconCache;
 import org.fixprotocol.ui.list.DataDictionaryFileDialog;
@@ -101,7 +103,7 @@ public class FIXClientMain {
 
 		@Override
 		public void actionPerformed(ActionEvent ev) {
-			dictionariesDialog.setLocationByPlatform(true);
+			dictionariesDialog.setLocationRelativeTo(jframe);
 			dictionariesDialog.setVisible(true);
 		}
 	}
@@ -114,12 +116,12 @@ public class FIXClientMain {
 		/*
 		 * PANELS
 		 */
-		ImageIcon iconLogo = IconCache.getInstance().getImage(
+		ImageIcon fixProtocolIcon = IconCache.getInstance().getImage(
 				"fixprotocol_logo");
-		JLabel lblLogo = new JLabel(iconLogo);
+		JLabel fixprotocolLogo = new JLabel(fixProtocolIcon);
 		if (Desktop.isDesktopSupported()) {
-			lblLogo.setCursor(new Cursor(Cursor.HAND_CURSOR));
-			lblLogo.addMouseListener(new MouseAdapter() {
+			fixprotocolLogo.setCursor(new Cursor(Cursor.HAND_CURSOR));
+			fixprotocolLogo.addMouseListener(new MouseAdapter() {
 				@Override
 				public void mouseClicked(MouseEvent e) {
 					if (e.getClickCount() > 0) {
@@ -134,11 +136,11 @@ public class FIXClientMain {
 				}
 			});
 		}
-
+		
 		JPanel logoPnl = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		logoPnl.setBackground(Color.WHITE);
 		logoPnl.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1, true));
-		logoPnl.add(lblLogo);
+		logoPnl.add(fixprotocolLogo);
 
 		JPanel statusPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		statusPanel.add(new JLabel("Ready"));
@@ -186,6 +188,7 @@ public class FIXClientMain {
 		dictionariesDialog.addDataDictionaryListener(fixMsgAnalyzePnl);
 		dictionariesDialog.setIconImages(frameIcons);
 		dictionariesDialog.setSize(640, 320);
+		dictionariesDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
 		// MAIN CONTAINER
 		Container cp = jframe.getContentPane();

@@ -4,7 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 
-import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.event.ListSelectionEvent;
@@ -13,9 +12,9 @@ import javax.swing.event.ListSelectionListener;
 import org.fixprotocol.fix.FIXMessage;
 import org.fixprotocol.ui.event.DataDictionaryEvent;
 import org.fixprotocol.ui.event.DataDictionaryListener;
-import org.fixprotocol.ui.list.FIXMessageListItem;
 import org.fixprotocol.ui.list.FIXMessageListPanel;
 import org.fixprotocol.ui.table.FIXFieldTablePanel;
+import org.fixprotocol.ui.table.FIXMessageMetaTablePanel;
 import org.fixprotocol.ui.text.FIXMessageTextAreaPanel;
 
 import quickfix.DataDictionary;
@@ -31,14 +30,10 @@ public class FIXMessageAnalyzePanel extends JPanel implements WindowListener,
 	private class SelectionListener implements ListSelectionListener {
 		@Override
 		public void valueChanged(ListSelectionEvent e) {
-			@SuppressWarnings("unchecked")
-			JList<FIXMessageListItem> list = (JList<FIXMessageListItem>) e
-					.getSource();
-			FIXMessageListItem listItem = list.getSelectedValue();
-			FIXMessage message = listItem.getMessage();
+//			FIXMessage message = fixMsgListPanel.getSelectedValue();
+			FIXMessage message = fixMessageMetaTablePanel.getSelectedValue();
 			pnlFixMsgTable.setData(message.getAll());
-			pnlFixMessageTextArea.getFixMessageTextArea().setText(
-					message.toString());
+			pnlFixMessageTextArea.updateFIXMessage(message);
 		}
 	}
 
@@ -47,6 +42,7 @@ public class FIXMessageAnalyzePanel extends JPanel implements WindowListener,
     private JSplitPane splitPaneListTbl;
     private JSplitPane splitPaneMain;
 	private FIXMessageTextAreaPanel pnlFixMessageTextArea;
+	private FIXMessageMetaTablePanel fixMessageMetaTablePanel;
 
     public FIXMessageAnalyzePanel() {
         initUI();
@@ -54,17 +50,23 @@ public class FIXMessageAnalyzePanel extends JPanel implements WindowListener,
 
     private void initUI() {
     	pnlFixMessageTextArea = new FIXMessageTextAreaPanel();
+    	
         pnlFixMsgTable = new FIXFieldTablePanel();
-        fixMsgListPanel = new FIXMessageListPanel();
-        fixMsgListPanel.addListSelectionListener(new SelectionListener());
-        pnlFixMessageTextArea.addFIXMessageListener(fixMsgListPanel);
         pnlFixMessageTextArea.addFIXMessageListener(pnlFixMsgTable);
+        
+//        fixMsgListPanel = new FIXMessageListPanel();
+//        fixMsgListPanel.addListSelectionListener(new SelectionListener());
+//        pnlFixMessageTextArea.addFIXMessageListener(fixMsgListPanel);
+        
+        fixMessageMetaTablePanel = new FIXMessageMetaTablePanel();
+        fixMessageMetaTablePanel.addListSelectionListener(new SelectionListener());
+        pnlFixMessageTextArea.addFIXMessageListener(fixMessageMetaTablePanel);
 
         splitPaneListTbl = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
                 true, pnlFixMessageTextArea, pnlFixMsgTable);
 
-        splitPaneMain = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
-                true, fixMsgListPanel, splitPaneListTbl);
+        splitPaneMain = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
+                true, fixMessageMetaTablePanel, splitPaneListTbl);
 
         setLayout(new BorderLayout());
         add(splitPaneMain);
@@ -117,7 +119,8 @@ public class FIXMessageAnalyzePanel extends JPanel implements WindowListener,
 	public void setDataDictionary(DataDictionary dd) {
 		this.dataDictionary = dd;
 		pnlFixMessageTextArea.setDataDictionary(dd);
-		fixMsgListPanel.setDataDictionary(dd);
+//		fixMsgListPanel.setDataDictionary(dd);
+		fixMessageMetaTablePanel.setDataDictionary(dd);
 	}
 
 	@Override

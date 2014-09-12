@@ -179,6 +179,10 @@ public class FIXMessage implements Comparable<FIXMessage>, Cloneable {
 
 		return result >= 0;
 	}
+	
+	public boolean has(Integer tag) {
+		return this.tagSet.contains(tag);
+	}
 
 	public FIXField get(String field) {
 		int result = Collections.binarySearch(sortedByField, new FIXField(
