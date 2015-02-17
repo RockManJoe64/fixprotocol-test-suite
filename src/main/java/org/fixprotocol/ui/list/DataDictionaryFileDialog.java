@@ -51,6 +51,8 @@ public class DataDictionaryFileDialog extends JDialog {
 
 	private static final String RECENT_DIRECTORY = "RecentDirectory";
 	
+	private static final String SELECTED_DICTIONARY = "SelectedDictionary";
+	
 	private DataDictionaries dictionaries = new DataDictionaries();
 
 	private Preferences preferences = Preferences.userNodeForPackage(getClass());
@@ -116,8 +118,6 @@ public class DataDictionaryFileDialog extends JDialog {
 			}
 		}
 	}
-	
-	
 	
 	public DataDictionaryFileDialog(Window owner, String title,
 			ModalityType modalityType) {
@@ -209,9 +209,14 @@ public class DataDictionaryFileDialog extends JDialog {
 		DataDictionaryFile value = jlist.getSelectedValue();
 		if (value != null) {
 			setSelectedDictionary(value);
+			preferences.put(SELECTED_DICTIONARY, value.getName());
 			fireDataDictionarySelected(value.getDataDictionary());
 			jlist.repaint();
 		}
+	}
+	
+	public void loadDictionaries() {
+		this.listModel.loadDictionaries();
 	}
 
 	public DataDictionary getSelectedDictionary() {
@@ -261,13 +266,14 @@ public class DataDictionaryFileDialog extends JDialog {
 
 		public DictionaryListModel() {
 			super();
-			loadDictionaries();
 		}
 		
-		private void loadDictionaries() {
+		public void loadDictionaries() {
 			String fileList = preferences.get(FILE_LIST, null);
 			if (fileList == null || "".equals(fileList)) 
 				return;
+			String selectedDictName = preferences.get(SELECTED_DICTIONARY, null);
+			DataDictionaryFile selectedDict = null;
 			String[] tokens = fileList.split("\\|");
 			for (String string : tokens) {
 				String[] kv = string.split("\\=");
@@ -277,9 +283,15 @@ public class DataDictionaryFileDialog extends JDialog {
 					DataDictionaryFile item = DataDictionaryFile.load(name,
 							new File(filePath));
 					this.addElement(item);
+					if (selectedDictName != null && item.getName().equals(selectedDictName))
+						selectedDict = item;
 				} catch (FileNotFoundException | ConfigError e) {
 					System.err.println("Could not load dictionary: " + filePath);
 				}
+			}
+			if (selectedDict != null) {
+				setSelectedDictionary(selectedDict);
+				fireDataDictionarySelected(selectedDictionary.getDataDictionary());
 			}
 		}
 		

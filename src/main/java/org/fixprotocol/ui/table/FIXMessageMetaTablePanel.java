@@ -10,8 +10,10 @@ import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 import java.util.prefs.Preferences;
@@ -76,8 +78,41 @@ public class FIXMessageMetaTablePanel extends JPanel implements FIXMessageListen
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			FIXMessageMetaTableModel model = (FIXMessageMetaTableModel) jTable.getModel();
-			model.clear();
+			int option = JOptionPane.showConfirmDialog(FIXMessageMetaTablePanel.this,
+					"Do you really want to clear all messages from the screen?", 
+					"Message Clear",
+					JOptionPane.YES_NO_OPTION);
+			if (option == JOptionPane.YES_OPTION) {
+				FIXMessageMetaTableModel model = (FIXMessageMetaTableModel) jTable.getModel();
+				model.clear();				
+			}
+		}
+	}
+	
+	private class DeleteAction extends AbstractAction {
+		private static final long serialVersionUID = 1L;
+
+		public DeleteAction() {
+			super("Delete");
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			int selectedRow = jTable.getSelectedRow();
+			if (selectedRow < 0) {
+				JOptionPane.showMessageDialog(FIXMessageMetaTablePanel.this,
+						"Please select a message to delete",
+						"Message Selection", JOptionPane.INFORMATION_MESSAGE);
+				return;
+			}
+			int option = JOptionPane.showConfirmDialog(FIXMessageMetaTablePanel.this,
+					"Do you really want delete the selected message?", 
+					"Message Delete",
+					JOptionPane.YES_NO_OPTION);
+			if (option == JOptionPane.YES_OPTION) {
+				FIXMessageMetaTableModel model = (FIXMessageMetaTableModel) jTable.getModel();
+				model.remove(jTable.convertRowIndexToModel(selectedRow));				
+			}
 		}
 	}
 	
@@ -118,6 +153,44 @@ public class FIXMessageMetaTablePanel extends JPanel implements FIXMessageListen
 			dialog.setVisible(true);
 		}
 	}
+	
+	private class SaveMessageFileAction extends AbstractAction {
+		private static final long serialVersionUID = 1L;
+
+		public SaveMessageFileAction() {
+			super("Save");
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			String recentPath = preferences.get(RECENT_DIRECTORY,
+					System.getProperty("user.home"));
+			JFileChooser chooser = new JFileChooser();
+			chooser.setCurrentDirectory(new File(recentPath));
+			chooser.setDialogTitle("Save Messages to File");
+			chooser.setMultiSelectionEnabled(false);
+			int selected = chooser.showSaveDialog(FIXMessageMetaTablePanel.this);
+			if (selected == JFileChooser.APPROVE_OPTION) {
+				File selectedFile = chooser.getSelectedFile();
+				preferences.put(RECENT_DIRECTORY, selectedFile.getParent());
+				try (BufferedWriter writer = new BufferedWriter(new FileWriter(
+						selectedFile))) {
+					FIXMessageMetaTableModel model = (FIXMessageMetaTableModel) jTable.getModel();
+					int rowCount = model.getRowCount();
+					for (int index = 0; index < rowCount; index++) {
+						writer.write(model.getFIXMessageAt(index).toString());
+						writer.newLine();
+					}
+				} catch (IOException ex) {
+					JOptionPane.showMessageDialog(FIXMessageMetaTablePanel.this,
+							"An error occurred while attempting to save the message file: "
+									+ ex.getMessage(),
+							"Unable To Save Message File",
+							JOptionPane.ERROR_MESSAGE);
+				}
+			}
+		}
+	}
 
 	private class LoadMessageFileAction extends AbstractAction {
 		private static final long serialVersionUID = 1L;
@@ -132,12 +205,12 @@ public class FIXMessageMetaTablePanel extends JPanel implements FIXMessageListen
 					System.getProperty("user.home"));
 			JFileChooser chooser = new JFileChooser();
 			chooser.setCurrentDirectory(new File(recentPath));
-			chooser.setDialogTitle("Choose a DataDictionary file");
+			chooser.setDialogTitle("Load Messages from File");
 			chooser.setMultiSelectionEnabled(false);
 			int selected = chooser.showOpenDialog(FIXMessageMetaTablePanel.this);
 			if (selected == JFileChooser.APPROVE_OPTION) {
-				preferences.put(RECENT_DIRECTORY, chooser.getSelectedFile().getParent());
 				File selectedFile = chooser.getSelectedFile();
+				preferences.put(RECENT_DIRECTORY, selectedFile.getParent());
 				try (BufferedReader reader = new BufferedReader(new FileReader(
 						selectedFile))) {
 					String messageString = reader.readLine();
@@ -188,8 +261,11 @@ public class FIXMessageMetaTablePanel extends JPanel implements FIXMessageListen
         JScrollPane scrollPane = new JScrollPane(jTable);
         
         JToolBar toolBar = new JToolBar();
+        toolBar.add(new DeleteAction());
 		toolBar.add(new ClearAction());
+		toolBar.add(new JToolBar.Separator());
 		toolBar.add(new LoadMessageFileAction());
+		toolBar.add(new SaveMessageFileAction());
 		toolBar.setFloatable(false);
 
 		setLayout(new BorderLayout(5, 5));
@@ -242,11 +318,11 @@ public class FIXMessageMetaTablePanel extends JPanel implements FIXMessageListen
     
 	@Override
 	public void fixMessageAdded(FIXMessageEvent e) {
-		addFIXMessage(e.getFIXMessage());
 	}
 
 	@Override
 	public void fixMessageUpdated(FIXMessageEvent e) {
+		addFIXMessage(e.getFIXMessage());
 	}
 
 	@Override

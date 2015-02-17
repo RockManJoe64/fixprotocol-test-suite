@@ -14,6 +14,7 @@ import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 
 import org.fixprotocol.fix.ASCII;
 import org.fixprotocol.fix.FIXField;
@@ -33,16 +34,16 @@ import quickfix.DataDictionary;
 public class FIXMessageTextAreaPanel extends JPanel implements DataDictionaryAware {
 
 	private static final long serialVersionUID = 1L;
-	
+
 	private JTextArea fixMessageTextArea;
 	private DataDictionary dataDictionary;
 	private JComboBox<Delimiter> delimiterCBox;
-	
+
 	private enum Delimiter {
 		SOH(ASCII.SOH),
 		PIPE(ASCII.PIPE),
 		NEWLINE(ASCII.EOL);
-		
+
 		private Character delimiter;
 
 		private Delimiter(Character delimiter) {
@@ -53,7 +54,7 @@ public class FIXMessageTextAreaPanel extends JPanel implements DataDictionaryAwa
 			return delimiter;
 		}
 	}
-	
+
 	private class UpdateAction extends AbstractAction {
         private static final long serialVersionUID = 1L;
 
@@ -121,7 +122,7 @@ public class FIXMessageTextAreaPanel extends JPanel implements DataDictionaryAwa
             fixMessageTextArea.selectAll();
         }
     }
-    
+
     public FIXMessageTextAreaPanel() {
     	initUI();
 	}
@@ -132,11 +133,11 @@ public class FIXMessageTextAreaPanel extends JPanel implements DataDictionaryAwa
         fixMessageTextArea.setWrapStyleWord(false);
 
         JScrollPane inputScrollPane = new JScrollPane(fixMessageTextArea);
-        
+
 		delimiterCBox = new JComboBox<Delimiter>(new Delimiter[] {
-				Delimiter.SOH, 
-				Delimiter.PIPE, 
-				Delimiter.NEWLINE 
+				Delimiter.SOH,
+				Delimiter.PIPE,
+				Delimiter.NEWLINE
 				});
 		delimiterCBox.addItemListener(new ItemListener() {
 			@Override
@@ -148,6 +149,8 @@ public class FIXMessageTextAreaPanel extends JPanel implements DataDictionaryAwa
 				}
 			}
 		});
+
+		JTextField txtHighlightTags = new JTextField(32);
 
         JButton excelButton = new JButton(new ConvertToExcelAction());
         JButton aegisButton = new JButton(new ConvertToAegisAction());
@@ -162,7 +165,7 @@ public class FIXMessageTextAreaPanel extends JPanel implements DataDictionaryAwa
         this.add(inputScrollPane);
         this.add(pnlButton, BorderLayout.SOUTH);
 	}
-	
+
 	private void normalize(Delimiter del) {
 		String text = fixMessageTextArea.getText();
 		if (text != null && !"".equals(text)) {
@@ -170,7 +173,7 @@ public class FIXMessageTextAreaPanel extends JPanel implements DataDictionaryAwa
 			fixMessageTextArea.setText(text);
 		}
 	}
-	
+
 	private void denormalize() {
 		String text = fixMessageTextArea.getText();
 		if (text == null || "".equals(text))
@@ -182,15 +185,15 @@ public class FIXMessageTextAreaPanel extends JPanel implements DataDictionaryAwa
         }
         fixMessageTextArea.setText(text);
 	}
-	
+
 	public void addFIXMessageListener(FIXMessageListener l) {
 		this.listenerList.add(FIXMessageListener.class, l);
 	}
-	
+
 	public void removeFIXMessageListener(FIXMessageListener l) {
 		this.listenerList.remove(FIXMessageListener.class, l);
 	}
-	
+
 	protected void fireFIXMessageUpdated(FIXMessage message) {
 		FIXMessageListener[] listeners = listenerList
 				.getListeners(FIXMessageListener.class);
@@ -198,13 +201,13 @@ public class FIXMessageTextAreaPanel extends JPanel implements DataDictionaryAwa
 			l.fixMessageUpdated(new FIXMessageEvent(this, message));
 		}
 	}
-	
+
 	public void updateFIXMessage(FIXMessage message) {
 		String text = message.toString();
 		this.fixMessageTextArea.setText(text);
 		normalize((Delimiter) delimiterCBox.getSelectedItem());
 	}
-	
+
 	@Override
 	public DataDictionary getDataDictionary() {
 		return this.dataDictionary;
@@ -214,5 +217,5 @@ public class FIXMessageTextAreaPanel extends JPanel implements DataDictionaryAwa
 	public void setDataDictionary(DataDictionary dd) {
 		this.dataDictionary = dd;
 	}
-	
+
 }

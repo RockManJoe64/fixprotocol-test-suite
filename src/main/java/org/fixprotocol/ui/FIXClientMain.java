@@ -5,21 +5,24 @@ import java.awt.Color;
 import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Desktop;
-import java.awt.Dialog.ModalityType;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Image;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.prefs.Preferences;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
-import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -28,15 +31,12 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
-import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
-import org.fixprotocol.fix.DataDictionaries;
 import org.fixprotocol.ui.icon.IconCache;
-import org.fixprotocol.ui.list.DataDictionaryFileDialog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,13 +44,18 @@ public class FIXClientMain {
 
 	private static final Logger log = LoggerFactory.getLogger(FIXClientMain.class
 			.getName());
+	
+	private static final String PREFS_WINDOW_LOCATION = "WindowLocation";
+
+	private static final String PREFS_WINDOW_SIZE = "WindowSize";
 
 	private JFrame jframe;
-	private DataDictionaries dictionaries = new DataDictionaries();
 
 	private FIXMessageAnalyzePanel fixMsgAnalyzePnl;
+	
+	private Preferences preferences = Preferences.userNodeForPackage(getClass());
 
-	private DataDictionaryFileDialog dictionariesDialog;
+	private FIXMessageClientPanel fixMessageClientPanel;
 
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(new Runnable() {
@@ -91,23 +96,6 @@ public class FIXClientMain {
 		}
 	}
 	
-	class SetDataDictionaryAction extends AbstractAction {
-		private static final long serialVersionUID = 1L;
-
-		public SetDataDictionaryAction() {
-			super("Set DataDictionary");
-			putValue(LARGE_ICON_KEY, IconCache.getInstance().getIcon("dictionary", 24));
-			putValue(SMALL_ICON, IconCache.getInstance().getIcon("dictionary", 16));
-			putValue(SHORT_DESCRIPTION, "Set the DataDictionary");
-		}
-
-		@Override
-		public void actionPerformed(ActionEvent ev) {
-			dictionariesDialog.setLocationRelativeTo(jframe);
-			dictionariesDialog.setVisible(true);
-		}
-	}
-
 	public FIXClientMain() {
 		initUI();
 	}
@@ -146,11 +134,13 @@ public class FIXClientMain {
 		statusPanel.add(new JLabel("Ready"));
 
 		fixMsgAnalyzePnl = new FIXMessageAnalyzePanel();
+		fixMessageClientPanel = new FIXMessageClientPanel();
 
 		ImageIcon iconBullet = IconCache.getInstance().getIcon("bullet_blue",
 				16);
 		JTabbedPane tabbedPane = new JTabbedPane();
 		tabbedPane.addTab("Analyze", iconBullet, fixMsgAnalyzePnl);
+		tabbedPane.addTab("Client", this.fixMessageClientPanel);
 		
 		ImageIcon iconFrame = IconCache.getInstance().getIcon("fixprotocol", 16);
 		List<Image> frameIcons = IconCache.getInstance().getIconImageList(
@@ -164,7 +154,8 @@ public class FIXClientMain {
 		jframe.setIconImages(frameIcons);
 		jframe.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		jframe.addWindowListener(fixMsgAnalyzePnl);
-
+		jframe.addComponentListener(new ResizeWindowListener());
+		
 		// MENU
 		JMenuItem item = new JMenuItem(new ExitAction());
 		JMenu menu = new JMenu("File");
@@ -173,23 +164,9 @@ public class FIXClientMain {
 		menuBar.add(menu);
 		jframe.setJMenuBar(menuBar);
 		
-		// TOOLBAR
-		JToolBar toolBar = new JToolBar();
-		toolBar.setFloatable(false);
-		toolBar.add(new SetDataDictionaryAction());
-		
 		JPanel tabPanel = new JPanel(new BorderLayout());
 		tabPanel.add(tabbedPane);
-		tabPanel.add(toolBar, BorderLayout.NORTH);
 		
-		// DIALOGS
-		dictionariesDialog = new DataDictionaryFileDialog(jframe,
-				"Data Dictionaries", ModalityType.APPLICATION_MODAL);
-		dictionariesDialog.addDataDictionaryListener(fixMsgAnalyzePnl);
-		dictionariesDialog.setIconImages(frameIcons);
-		dictionariesDialog.setSize(640, 320);
-		dictionariesDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-
 		// MAIN CONTAINER
 		Container cp = jframe.getContentPane();
 		cp.setLayout(new BorderLayout(5, 5));
@@ -197,10 +174,45 @@ public class FIXClientMain {
 		cp.add(tabPanel);
 		cp.add(statusPanel, BorderLayout.SOUTH);
 
-		// frame.pack();
-		jframe.setSize(1000, 600);
-		jframe.setLocationByPlatform(true);
+		initJFrameByPreferences();
 		jframe.setVisible(true);
+	}
+	
+	private void initJFrameByPreferences() {
+		String sizeStr = preferences.get(PREFS_WINDOW_SIZE, null);
+		if (sizeStr != null) {
+			String[] tokens = sizeStr.split("\\,");
+			jframe.setSize(Integer.valueOf(tokens[0]), Integer.valueOf(tokens[1]));
+		} else {
+			jframe.setSize(1000, 600);
+		}
+		String locStr = preferences.get(PREFS_WINDOW_LOCATION, null);
+		if (locStr != null) {
+			String[] tokens = locStr.split("\\,");
+			jframe.setLocation(Integer.valueOf(tokens[0]), Integer.valueOf(tokens[1]));
+		} else {
+			jframe.setLocationByPlatform(true);
+		}
+	}
+
+	private class ResizeWindowListener extends ComponentAdapter {
+		
+		@Override
+		public void componentResized(ComponentEvent e) {
+			Dimension size = jframe.getSize();
+			String sizeStr = String.valueOf(size.width) + ","
+					+ String.valueOf(size.height);
+			preferences.put(PREFS_WINDOW_SIZE, sizeStr);
+		}
+
+		@Override
+		public void componentMoved(ComponentEvent e) {
+			Point location = jframe.getLocation();
+			String locStr = String.valueOf(location.x) + ","
+					+ String.valueOf(location.y);
+			preferences.put(PREFS_WINDOW_LOCATION, locStr);
+		}
+		
 	}
 
 }
