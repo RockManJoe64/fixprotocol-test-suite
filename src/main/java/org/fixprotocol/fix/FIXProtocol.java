@@ -35,10 +35,10 @@ public class FIXProtocol {
 
         return instance;
     }
-    
+
     private DataDictionaries dictionaries = new DataDictionaries();
     private MessageFactories factories = new MessageFactories();
-    
+
     public static String normalize(String messageString) {
         String normalized = messageString.trim();
 
@@ -95,7 +95,7 @@ public class FIXProtocol {
 
         return getField(message, tag);
     }
-    
+
     public <T> Field<T> getField(String messageString, Integer tag, DataDictionary dd) {
         Message message = getMessage(messageString, dd);
 
@@ -138,9 +138,9 @@ public class FIXProtocol {
         }
 
         if (dd == null) {
-            return FieldType.Unknown;
+            return FieldType.UNKNOWN;
         } else {
-            return dd.getFieldTypeEnum(field);
+            return dd.getFieldType(field);
         }
     }
 
@@ -162,7 +162,7 @@ public class FIXProtocol {
             Iterator<Field<?>> it = message.iterator();
             while (it.hasNext()) {
                 Field<?> field = it.next();
-                FieldType fieldType = dd.getFieldTypeEnum(field.getField());
+                FieldType fieldType = dd.getFieldType(field.getField());
                 map.put(field.getField(), fieldType);
             }
 
@@ -185,7 +185,7 @@ public class FIXProtocol {
 
 		return message;
 	}
-	
+
 	public Message getMessage(String messageString,
 			DataDictionary dataDictionary) {
 		String fixVer = MessageUtils.getStringField(messageString, 8);
@@ -200,7 +200,7 @@ public class FIXProtocol {
 
 		return message;
 	}
-    
+
 	public Message getMessage(String messageString,
 			DataDictionary dataDictionary, MessageFactory messageFactory) {
 		Message message = null;
@@ -218,13 +218,13 @@ public class FIXProtocol {
 		String fixVersion = getFIXVersion(messageString);
 		return getFields(messageString, fixVersion);
 	}
-    
+
 	public List<FIXField> getFields(String messageString, String dataDictName)
 			throws ConfigError, IOException {
         DataDictionary dataDictionary = dictionaries.getDataDictionary(dataDictName);
         return getFields(messageString, dataDictionary);
 	}
-	
+
 	public List<FIXField> getFields(String messageString, DataDictionary dataDictionary)
 			throws ConfigError, IOException {
 		List<FIXField> list = new ArrayList<FIXField>();
@@ -258,5 +258,5 @@ public class FIXProtocol {
         message.fromString(messageString, dataDictionary, false);
         return message;
     }
-    
+
 }
